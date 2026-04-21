@@ -1,0 +1,115 @@
+name: GitHub Pages Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js (optional)
+        uses: actions/setup-node@v3
+        if: ${{ contains('.package.json', 'node') }}
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies (optional)
+        if: ${{ contains('.package.json', 'node') }}
+        run: npm install
+        
+      - name: Build project (optional)
+        if: ${{ contains('.package.json', 'node') }}
+        run: npm run build
+        
+      - name: Validate files
+        run: |
+          # Check for essential files
+          if [ ! -f index.html ]; then
+            echo "Warning: index.html not found - using default"
+            cat > index.html << EOF
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>GitHub Pages Demo</title>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body>
+                <h1>GitHub Pages Demo</h1>
+                <p>This site is deployed via GitHub Pages.</p>
+                <p>See QR-Code.html for mobile access.</p>
+            </body>
+            </html>
+            EOF
+          fi
+        
+      - name: Generate QR code information
+        run: |
+          REPO_NAME=$(echo ${{ github.repository }} | cut -d '/' -f 2)
+          OWNER_NAME=$(echo ${{ github.repository }} | cut -d '/' -f 1)
+          DEPLOY_URL="https://$OWNER_NAME.github.io/$REPO_NAME"
+          
+          # Generate QR code information file
+          echo "=== Deployment Information ===" > QR-INFO.txt
+          echo "Repository: ${{ github.repository }}" >> QR-INFO.txt
+          echo "Commit: ${{ github.sha }}" >> QR-INFO.txt
+          echo "Branch: ${{ github.ref }}" >> QR-INFO.txt
+          echo "Date: $(date)" >> QR-INFO.txt
+          echo "URL: $DEPLOY_URL" >> QR-INFO.txt
+          echo "QR URL: https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=$DEPLOY_URL" >> QR-INFO.txt
+          
+          # Generate QR-Code.html if not exists
+          if [ ! -f QR-Code.html ]; then
+            echo '<!DOCTYPE html>' > QR-Code.html
+            echo '<html>' >> QR-Code.html
+            echo '<head>' >> QR-Code.html
+            echo '<title>QR Code Access</title>' >> QR-Code.html
+            echo '</head>' >> QR-Code.html
+            echo '<body>' >> QR-Code.html
+            echo '<h2>Scan QR Code to Access</h2>' >> QR-Code.html
+            echo '<img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=$DEPLOY_URL" alt="QR Code">' >> QR-Code.html
+            echo '</body>' >> QR-Code.html
+            echo '</html>' >> QR-Code.html
+          else
+            # Update QR-Code.html with correct URL
+            sed -i "s|https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://yourusername.github.io/project-name|https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=$DEPLOY_URL|g" QR-Code.html
+          fi
+        
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
+          
+      - name: Create deployment artifact
+        run: |
+          # Create a simple artifact for download
+          mkdir -p dist-artifact
+          cp index.html dist-artifact/
+          cp QR-Code.html dist-artifact/
+          cp QR-INFO.txt dist-artifact/
+          
+          echo "Deployment artifact created" >> QR-INFO.txt
+        
+      - name: Upload QR information as artifact (optional)
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-info
+          path: QR-INFO.txt
+          
+      - name: Show deployment summary
+        run: |
+          echo "=== Deployment Summary ==="
+          echo "Repository: ${{ github.repository }}"
+          echo "Commit SHA: ${{ github.sha }}"
+          echo "Deployment URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+          echo "QR Code URL: https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+          echo "========================================"

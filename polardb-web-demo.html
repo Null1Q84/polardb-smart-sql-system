@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PolarDB-X智能SQL系统演示</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 2.5rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+        
+        h2 {
+            color: #764ba2;
+            margin: 30px 0 15px;
+            font-size: 1.8rem;
+        }
+        
+        h3 {
+            color: #555;
+            margin: 15px 0 10px;
+        }
+        
+        .qr-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        .qr-section img {
+            width: 300px;
+            height: 300px;
+            margin: 15px auto;
+            border: 5px solid #667eea;
+            border-radius: 10px;
+        }
+        
+        .demo-section {
+            background: #f7f9fc;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 30px 0;
+            border-left: 5px solid #764ba2;
+        }
+        
+        .api-endpoint {
+            background: #eef2ff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .api-endpoint code {
+            display: block;
+            background: #333;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-top: 5px solid #764ba2;
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.4rem;
+        }
+        
+        .button {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            margin: 10px;
+            transition: background 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .button:hover {
+            background: #764ba2;
+        }
+        
+        .input-section {
+            margin: 20px 0;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .input-section input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        .result-section {
+            background: #f0f5ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #764ba2;
+        }
+        
+        .result-section pre {
+            background: #333;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        .mobile-optimized {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border: 2px solid #ffc107;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            .qr-section img {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .api-endpoint code {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 PolarDB-X智能SQL系统演示</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">基于自然语言的SQL生成、分析和优化系统</p>
+        
+        <div class="qr-section">
+            <h2>📱 移动端访问二维码</h2>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://Null1Q84.github.io/polardb-smart-sql-system/" alt="GitHub Pages QR Code">
+            <p>扫描二维码即可在手机端访问</p>
+            <a href="https://Null1Q84.github.io/polardb-smart-sql-system/" class="button">访问 GitHub Pages</a>
+        </div>
+        
+        <div class="demo-section">
+            <h2>✨ 系统介绍</h2>
+            <p>PolarDB-X智能SQL系统是一个基于自然语言交互的SQL查询系统，结合了DB-GPT智能SQL生成和SQLFlow性能分析优化，支持PolarDB-X分布式数据库。</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🔍 AI SQL生成</h4>
+                    <p>使用自然语言描述查询需求，系统自动生成SQL语句</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 SQL性能分析</h4>
+                    <p>自动分析SQL性能，提供优化建议和安全评分</p>
+                </div>
+                <div class="feature-card">
+                    <h4>⚡ 分布式支持</h4>
+                    <p>支持PolarDB-X分布式数据库，分区查询和集群查询</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔗 完整流程</h4>
+                    <p>从自然语言到SQL再到数据库执行的完整流程</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>📡 API端点</h2>
+            
+            <div class="api-endpoint">
+                <h3>智能SQL生成</h3>
+                <code>POST http://localhost:8201/polardb-dbgpt/generate<br>
+请求：{"query": "查询所有用户"}</code>
+            </div>
+            
+            <div class="api-endpoint">
+                <h3>SQL性能分析</h3>
+                <code>POST http://localhost:8202/polardb-sqlflow/analyze<br>
+请求：{"sql": "SELECT * FROM users"}</code>
+            </div>
+            
+            <div class="api-endpoint">
+                <h3>完整流程网关</h3>
+                <code>POST http://localhost:8200/polardb-gateway/generate<br>
+请求：{"query": "分区查询所有数据"}</code>
+            </div>
+            
+            <div class="api-endpoint">
+                <h3>系统测试</h3>
+                <code>GET http://localhost:8200/polardb-gateway/test</code>
+            </div>
+            
+            <div class="api-endpoint">
+                <h3>健康检查</h3>
+                <code>GET http://localhost:8200/polardb-gateway/health</code>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>💻 Docker部署</h2>
+            <code>docker-compose -f docker-compose-polardb.yaml up</code>
+            
+            <div class="input-section">
+                <h3>命令行部署</h3>
+                <code>./start_polardb_services.sh</code>
+                <p style="margin-top: 15px;">启动三个服务：DB-GPT、SQLFlow、网关</p>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>📁 项目结构</h2>
+            <code>
+• docker-compose-polardb.yaml - Docker部署配置<br>
+• polardb_config.yaml - PolarDB-X配置<br>
+• start_polardb_services.sh - 启动脚本<br>
+• polar_db_gpt_service.py - DB-GPT服务<br>
+• polar_db_sqlflow_service.py - SQLFlow服务<br>
+• polar_db_gateway_service.py - 网关服务<br>
+• sql/polardb_x_init.sql - 数据库初始化脚本<br>
+• publish_polardb_project.py - GitHub发布脚本
+            </code>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🎯 测试用例</h2>
+            <ul style="padding-left: 20px; margin: 20px 0;">
+                <li>"查询所有用户"</li>
+                <li>"统计订单数量"</li>
+                <li>"查找高价值客户"</li>
+                <li>"获取最新产品"</li>
+                <li>"计算平均销售额"</li>
+                <li>"分区查询所有数据"</li>
+                <li>"集群查询订单数据"</li>
+                <li>"分布式查询用户信息"</li>
+            </ul>
+        </div>
+        
+        <div class="mobile-optimized">
+            <h2>📱 移动端优化</h2>
+            <p>本页面已针对移动设备进行优化：</p>
+            <ul style="padding-left: 20px;">
+                <li>触摸友好的按钮和界面</li>
+                <li>响应式设计适应各种屏幕尺寸</li>
+                <li>QR Code支持快速扫描访问</li>
+                <li>轻量级加载，适合手机访问</li>
+            </ul>
+        </div>
+        
+        <div style="text-align: center; margin-top: 40px;">
+            <h2>🔗 GitHub项目</h2>
+            <a href="https://github.com/Null1Q84/polardb-smart-sql-system" class="button">查看GitHub仓库</a>
+            <a href="https://Null1Q84.github.io/polardb-smart-sql-system/polardb-web-demo.html" class="button">在线演示</a>
+        </div>
+    </div>
+    
+    <script>
+        // 简单的API测试功能
+        async function testApi() {
+            const queryInput = document.getElementById('queryInput');
+            if (!queryInput || !queryInput.value.trim()) {
+                alert('请输入SQL查询语句');
+                return;
+            }
+            
+            try {
+                // 模拟API调用
+                const query = queryInput.value.trim();
+                const resultDiv = document.getElementById('apiResult');
+                
+                // 显示模拟结果
+                resultDiv.innerHTML = `
+                    <h3>API测试结果</h3>
+                    <p>查询：${query}</p>
+                    <pre>
+{
+  "status": "success",
+  "generated_sql": "SELECT * FROM users WHERE partition_key = '2024'",
+  "optimized_sql": "SELECT id, username, email FROM users WHERE partition_key = '2024' ORDER BY id LIMIT 100",
+  "performance_score": 95,
+  "security_score": 98,
+  "database_result": {
+    "success": true,
+    "rows": 3,
+    "data": [
+      {"id": 1, "username": "test_user_1", "email": "user1@example.com"},
+      {"id": 2, "username": "test_user_2", "email": "user2@example.com"},
+      {"id": 3, "username": "test_user_3", "email": "user3@example.com"}
+    ]
+  }
+}
+                    </pre>
+                `;
+            } catch (error) {
+                console.error('API测试失败:', error);
+                alert('API测试失败');
+            }
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('PolarDB-X演示页面加载完成');
+            
+            // 创建输入区域
+            const inputSection = document.createElement('div');
+            inputSection.className = 'input-section';
+            inputSection.innerHTML = `
+                <h3>🔧 在线API测试</h3>
+                <input type="text" id="queryInput" placeholder="输入查询语句，例如：查询所有用户">
+                <button onclick="testApi()" class="button">测试API</button>
+                <div id="apiResult" class="result-section"></div>
+            `;
+            
+            const container = document.querySelector('.container');
+            const lastDemoSection = document.querySelector('.demo-section:last-of-type');
+            container.insertBefore(inputSection, lastDemoSection);
+            
+            // QR Code更新
+            const qrImg = document.querySelector('.qr-section img');
+            if (qrImg) {
+                qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${window.location.href}`;
+            }
+        });
+    </script>
+</body>
+</html>

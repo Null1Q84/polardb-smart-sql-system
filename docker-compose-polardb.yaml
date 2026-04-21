@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # MySQL模拟PolarDB-X
+  mysql-polardb:
+    image: mysql:8.0
+    container_name: polardb_x
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_USER: polardb_x_user
+      MYSQL_PASSWORD: polardb_x_password
+      MYSQL_DATABASE: polardb_x_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./sql/polardb_x_init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./polardb_x_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  # DB-GPT服务
+  polardb-dbgpt:
+    build:
+      context: .
+      dockerfile: Dockerfile-db-gpt
+    container_name: polardb_dbgpt_service
+    environment:
+      POLARDB_X_HOST: mysql-polardb
+      POLARDB_X_PORT: 3306
+      POLARDB_X_USER: polardb_x_user
+      POLARDB_X_PASSWORD: polardb_x_password
+      POLARDB_X_DATABASE: polardb_x_db
+    ports:
+      - "8201:8201"
+    depends_on:
+      mysql-polardb:
+        condition: service_healthy
+    volumes:
+      - ./models:/models
+      - ./logs:/logs
+  
+  # SQLFlow服务
+  polardb-sqlflow:
+    build:
+      context: .
+      dockerfile: Dockerfile-sqlflow
+    container_name: polardb_sqlflow_service
+    environment:
+      POLARDB_X_HOST: mysql-polardb
+      POLARDB_X_PORT: 3306
+      POLARDB_X_USER: polardb_x_user
+      POLARDB_X_PASSWORD: polardb_x_password
+      POLARDB_X_DATABASE: polardb_x_db
+    ports:
+      - "8202:8202"
+    depends_on:
+      mysql-polardb:
+        condition: service_healthy
+    volumes:
+      - ./config:/config
+      - ./logs:/logs
+  
+  # 网关服务
+  polardb-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile-gateway
+    container_name: polardb_gateway_service
+    environment:
+      DB_GPT_URL: http://polardb-dbgpt:8201
+      SQLFLOW_URL: http://polardb-sqlflow:8202
+      
+      POLARDB_X_HOST: mysql-polardb
+      POLARDB_X_PORT: 3306
+      POLARDB_X_USER: polardb_x_user
+      POLARDB_X_PASSWORD: polardb_x_password
+      POLARDB_X_DATABASE: polardb_x_db
+    ports:
+      - "8200:8200"
+    depends_on:
+      - polardb-dbgpt
+      - polardb-sqlflow
+    volumes:
+      - ./logs:/logs
+
+volumes:
+  polardb_x_data:

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QR Code Access</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #222, #444);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .qr-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        .qr-image {
+            width: 300px;
+            height: 300px;
+            margin: 20px auto;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .title {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: white;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        
+        .mobile-tips {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            width: 90%;
+        }
+        
+        .tip {
+            margin: 10px 0;
+            color: #aaa;
+            font-size: 16px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 20px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+        
+        .button {
+            padding: 15px 30px;
+            background: #555;
+            color: white;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: background 0.3s;
+            font-size: 18px;
+            min-height: 50px;
+            min-width: 120px;
+        }
+        
+        .button:hover {
+            background: #666;
+        }
+        
+        .url {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #aaa;
+            word-break: break-word;
+        }
+        
+        /* Mobile optimization */
+        @media (max-width: 768px) {
+            .qr-container {
+                padding: 20px;
+            }
+            
+            .qr-image {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .button {
+                width: 100%;
+            }
+        }
+        
+        /* Loading animation */
+        .loading {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="qr-container">
+        <h1 class="title">📱 QR Code Access</h1>
+        <p class="subtitle">Scan QR code with your phone camera</p>
+        
+        <img class="qr-image loading" 
+             src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://yourusername.github.io/project-name/"
+             alt="QR Code"
+             id="qr-image">
+        
+        <div class="mobile-tips">
+            <h3>📝 Mobile Tips:</h3>
+            <p class="tip">• Open phone camera</p>
+            <p class="tip">• Point camera at QR code</p>
+            <p class="tip">• Tap notification to open link</p>
+            <p class="tip">• Use mobile browser for best experience</p>
+            
+            <p class="tip">• 🔄 Rotate phone landscape for better UI</p>
+            <p class="tip">• 📖 Enable full-screen mode</p>
+            <p class="tip">• 🚀 Allow notifications for updates</p>
+        </div>
+        
+        <p class="url">
+            URL: https://yourusername.github.io/project-name/
+        </p>
+        
+        <div class="buttons">
+            <a href="/" class="button">Go to Homepage</a>
+            <a href="/README.md" class="button">Read Documentation</a>
+        </div>
+    </div>
+    
+    <script>
+        // Update QR code with current URL
+        document.addEventListener('DOMContentLoaded', function() {
+            const qrImage = document.getElementById('qr-image');
+            
+            // Get current URL and extract repository name
+            const currentUrl = window.location.href;
+            const parts = currentUrl.split('/');
+            
+            if (parts.length >= 4) {
+                const repoName = parts[3];
+                const ownerName = parts[2].split('.')[0];
+                const deployUrl = `https://${ownerName}.github.io/${repoName}`;
+                
+                qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${deployUrl}`;
+                
+                // Update URL text
+                const urlElement = document.querySelector('.url');
+                urlElement.textContent = `URL: ${deployUrl}`;
+            }
+            
+            // Add QR code scanning instructions for iOS/Android
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                const tipsDiv = document.querySelector('.mobile-tips');
+                const mobileTip = document.createElement('p');
+                mobileTip.className = 'tip';
+                mobileTip.textContent = '📱 This QR code is for other devices. You can directly click the links above!';
+                tipsDiv.appendChild(mobileTip);
+            }
+            
+            // QR code loading animation
+            qrImage.addEventListener('load', function() {
+                this.classList.remove('loading');
+            });
+            
+            qrImage.addEventListener('error', function() {
+                this.src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://example.com';
+                alert('QR code generation failed. Using fallback QR code.');
+            });
+        });
+    </script>
+</body>
+</html>
